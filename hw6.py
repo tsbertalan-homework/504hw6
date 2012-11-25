@@ -1,6 +1,11 @@
 # -*- coding: utf-8 *-*
 import numpy as np
 import matplotlib.pyplot as plt
+from sys import exit
+so = (.1, .4)  # example stable-oscilatory parameter combinaiton
+sn = (0.4, .8)  # example stable-nonoscilatory parameter combinaiton
+#so = (.4, .8)
+#so = (.8, .8)
 minmu = .01
 maxmu = 1
 mina = .01
@@ -14,13 +19,14 @@ al = np.arange(mina, maxa, da)
 A = np.ones((resolution, resolution))
 B = (mu ** 2 + a ** 3 - a ** 2) / a ** 2
 C = mu ** 2 / a
-eig1 = (-B + np.lib.scimath.sqrt(B ** 2 - 4 * A * C)) / 2 / a
-eig2 = (-B - np.lib.scimath.sqrt(B ** 2 - 4 * A * C)) / 2 / a
 
-real = (eig1.imag == 0) | (eig2.imag == 0)
-real = np.logical_not(real)  # clearly I have made some mistakes
+eig1 = (-B + np.lib.scimath.sqrt(B ** 2 - 4 * A * C)) / 2 / A
+eig2 = (-B - np.lib.scimath.sqrt(B ** 2 - 4 * A * C)) / 2 / A
+
+real = (eig1.imag == 0) & (eig2.imag == 0)
+#real = np.logical_not(real)  # clearly I have made some mistakes
 imaginary = np.logical_not(real)
-neg = (eig1.real <= 0) | (eig2.real <= 0)
+neg = (eig1.real <= 0) & (eig2.real <= 0)
 negreal = neg | real
 negimag = neg | imaginary
 
@@ -35,7 +41,7 @@ figuretoactual = lambda figure, maxval: float(figure) / resolution * maxval
 a2f = actualtofigure
 f2a = figuretoactual
 
-fig1 = plt.figure(1, figsize=(11, 8.5))
+fig1 = plt.figure(1, figsize=(16, 8.5))
 numaxes = 3
 numticks = 5
 ax1 = fig1.add_subplot(2, 2, 1)
@@ -67,7 +73,7 @@ ax2.set_ylabel(r'$\alpha$')
 ax3 = fig1.add_subplot(2, 2, 3)
 ax3.imshow(negimag, cmap='Greys', origin='lower')
 ax3.set_title('stable oscilatory \n (Eigenvalues have negative real part and are imaginary.')
-ax3.scatter([0.2 * resolution / maxmu], [0.4 * resolution / maxa], color='k')
+ax3.scatter([a2f(so[0], maxmu)], [a2f(so[1], maxa)], color='k')
 ax3.set_xlim([0, resolution])
 ax3.set_ylim([0, resolution])
 locations = [int(x) for x in np.arange(0, resolution, resolution / numticks)]
@@ -83,7 +89,7 @@ ax3.set_ylabel(r'$\alpha$')
 ax4 = fig1.add_subplot(2, 2, 4)
 ax4.imshow(negreal, cmap='Greys', origin='lower')
 ax4.set_title('stable non-oscilatory \n (Eigenvalues are negative pure-real.)')
-ax4.scatter([a2f(0.1, maxmu)], [a2f(0.4, maxa)], color='k')
+ax4.scatter([a2f(sn[0], maxmu)], [a2f(sn[1], maxa)], color='k')
 ax4.set_xlim([0, resolution])
 ax4.set_ylim([0, resolution])
 locations = [int(x) for x in np.arange(0, resolution, resolution / numticks)]
@@ -98,47 +104,72 @@ ax4.set_ylabel(r'$\alpha$')
 
 plt.tight_layout()
 #fig1.savefig('hw6_1_f1.pdf')
-plt.show()
-
-fig2 = plt.figure(2, figsize=(11, 8.5))
-
-ax21 = fig2.add_subplot(2, 1, 1)
-tmin = 0.01
-tmax = 120
-timeresolution = 10000
-dt = (tmax - tmin) / timeresolution
-tl = list(np.arange(tmin, tmax, dt))
-xp = lambda x, y, mu, a: mu - (1 + a) * x + x ** 2 * y
-yp = lambda x, y: x - x ** 2 * y
-mu = 0.2
-a  = 0.4
-initials = [(0, 0), (0, 1), (2, 2.5)]
-patterns = ['k--', 'k:', 'k-']
-for (initial, pattern)in zip(initials, patterns):
-    xold = initial[0]
-    yold = initial[1]
-    xl = []
-    yl = []
-    for t in tl:
-        x = xold + xp(xold, yold, mu, a) * dt
-        y = yold + yp(xold, yold) * dt
-        xl.append(x)
-        yl.append(y)
-        xold = x
-        yold = y
-    ax21.plot(xl, yl, pattern)
-ax21.legend([r'$x_0=%.1f$, $y_0=%.1f$' % initial for initial in initials])
-ax21.set_title(r'phase-plane trajectories for $\tau_{max}=%.0f$, with the parameters $\mu=%.2f$, $\alpha=%.2f$' % (tmax, mu, a))
-ax21.set_xlabel(r'$x$')
-ax21.set_ylabel(r'$y$')
-
-ax22 = fig2.add_subplot(2, 1, 2)
-ax22.plot(tl, xl, 'k-')
-ax22.plot(tl, yl, 'k--')
-ax22.legend([r'$x$', r'$y$'])
-ax22.set_title(r'$x_0=%.1f$, $y_0=%.1f$' % initial)
-ax22.set_xlabel(r'$\tau$')
-ax22.set_ylabel(r'$x$ or $y$')
-plt.tight_layout()
-#fig2.savefig('hw6_1_f2.pdf')
 #plt.show()
+#exit()
+ax1es = range(4)
+ax2es = range(4)
+figs = range(4)
+
+#For plotting nullclines:
+#from xdot:
+y1 = lambda x, mu, a: ((1 + a)*x - mu) / x ** 2
+#from ydot:
+y2 = lambda x, mu, a: 1 / x
+xmin = 0.01
+xmax = 5
+dx = (xmax - xmin) / resolution
+xl_nullclines = list(np.arange(xmin, xmax, dx))
+
+plt.tight_layout()
+
+for (fignum, parameters, regime) in zip([2, 3], [so, sn], ['Stable Limit Cycle', 'Stable Focus']):
+    mu, a = parameters
+    figs[fignum] = plt.figure(fignum, figsize=(11, 8.5))
+
+    ax1es[fignum] = figs[fignum].add_subplot(2, 1, 1)
+    tmin = 0.01
+    tmax = 200
+    timeresolution = 4000
+    dt = (tmax - tmin) / timeresolution
+    tl = list(np.arange(tmin, tmax, dt))
+    xp = lambda x, y, mu, a: mu - (1 + a) * x + x ** 2 * y
+    yp = lambda x, y: x - x ** 2 * y
+    initials = [(2, 2.5), (0, 0)]
+    patterns = ['k+', 'k.']
+    for (initial, pattern) in zip(initials, patterns):
+        xold = initial[0]
+        yold = initial[1]
+        xl = []
+        yl = []
+        for t in tl:
+            x = xold + xp(xold, yold, mu, a) * dt
+            y = yold + yp(xold, yold) * dt
+            xl.append(x)
+            yl.append(y)
+            xold = x
+            yold = y
+        ax1es[fignum].plot(xl, yl, pattern, label=r'$x_0=%.2f$, $y_0=%.2f$' % initial, markersize=3)
+#    nullclines:
+    y1l = [y1(x, mu, a) for x in xl_nullclines]
+    y2l = [y2(x, mu, a) for x in xl_nullclines]
+    ax1es[fignum].plot(xl_nullclines, y1l, 'b-', label=r"nullcline from $x'$")
+    ax1es[fignum].plot(xl_nullclines, y2l, 'r--', label=r"nullcline from $y'$")
+    ax1es[fignum].set_ylim((0, max(yl) + 1))
+    ax1es[fignum].set_xlim((0, xmax))
+    ax1es[fignum].legend()
+    ax1es[fignum].set_title(r'phase-plane trajectories for $\tau_{max}=%.0f$' % (tmax,))
+    ax1es[fignum].set_xlabel(r'$x$')
+    ax1es[fignum].set_ylabel(r'$y$')
+
+    ax2es[fignum] = figs[fignum].add_subplot(2, 1, 2)
+    ax2es[fignum].plot(tl, xl, 'k-')
+    ax2es[fignum].plot(tl, yl, 'k--')
+    ax2es[fignum].legend([r'$x$', r'$y$'])
+    ax2es[fignum].set_title(r'Concentrations over time starting from $x_0=%.1f$, $y_0=%.1f$' % initial)
+    ax2es[fignum].set_xlabel(r'$\tau$')
+    ax2es[fignum].set_ylabel(r'$x$ or $y$')
+#    figs[fignum].savefig('hw6_1_f2.pdf')
+    figs[fignum].suptitle(regime + r', with the parameters $\mu=%.2f$, $\alpha=%.2f$' % (mu, a))
+#    plt.tight_layout()
+
+plt.show()
