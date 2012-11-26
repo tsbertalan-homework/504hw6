@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sys import exit
 lc = (.2, .5)  # example limit cycle parameter combinaiton
-sf = (.6, .8)  # example stable focus parameter combinaiton
+sf = (.4, .8)  # example stable focus parameter combinaiton
 #so = (.4, .8)
 #so = (.8, .8)
 minmu = .01
@@ -16,12 +16,17 @@ da = (maxa - mina) / resolution
 mul = np.arange(minmu, maxmu, dmu)
 al = np.arange(mina, maxa, da)
 (mu, a) = np.meshgrid(mul, al)
-A = np.ones((resolution, resolution))
-B = (mu ** 2 + a ** 3 - a ** 2) / a ** 2
-C = mu ** 2 / a
 
-eig1 = (-B + np.lib.scimath.sqrt(B ** 2 - 4 * A * C)) / 2 / A
-eig2 = (-B - np.lib.scimath.sqrt(B ** 2 - 4 * A * C)) / 2 / A
+def eigs(mu, a):
+    '''Calculate two eigenvalues'''
+    A = 1
+    B = (mu ** 2 + a ** 3 - a ** 2) / a ** 2
+    C = mu ** 2 / a
+    eig1 = (-B + np.lib.scimath.sqrt(B ** 2 - 4 * A * C)) / 2 / A
+    eig2 = (-B - np.lib.scimath.sqrt(B ** 2 - 4 * A * C)) / 2 / A
+    return (eig1, eig2)
+
+(eig1, eig2) = eigs(mu, a)
 
 real = (eig1.imag == 0) & (eig2.imag == 0)
 real = np.logical_not(real)  # clearly I have made some mistakes
@@ -166,16 +171,29 @@ for (fignum, parameters, regime) in zip([2, 3], [lc, sf], ['Stable Limit Cycle',
     ax1es[fignum].set_xlabel(r'$x$')
     ax1es[fignum].set_ylabel(r'$y$')
 
+    #predict period from eigenvalues of linearization
+    (eig1, eig2) = eigs(mu, a)
+    (eig1, eig2) = eigs(mu, a)
+    eigstr1 = '%.3f +%.3f j' % (eig1.real, eig1.imag)
+    eigstr2 = '%.3f %.3f j' % (eig2.real, eig2.imag)
+    period = 2 * np.pi / eig1.imag
+
     ax2es[fignum] = figs[fignum].add_subplot(2, 1, 2)
     ax2es[fignum].plot(tl, xl, 'k-')
     ax2es[fignum].plot(tl, yl, 'k--')
     ax2es[fignum].legend([r'$x$', r'$y$'])
     ax2es[fignum].set_title(r'Concentrations over time starting from $x_0=%.1f$, $y_0=%.1f$' % initial)
-    ax2es[fignum].set_xlabel(r'$\tau$')
+    ax2es[fignum].set_xlabel(r'$\tau$ (tick marks are separated by periods $T=2\pi/\omega=%.1f$, as predicted by the linearization)' % period)
     ax2es[fignum].set_ylabel(r'$x$ or $y$')
-    figs[fignum].suptitle('Problem 1: ' + regime + r', with the parameters $\mu=%.2f$, $\alpha=%.2f$' % (mu, a))
+
+    title = 'Problem 1: ' + regime + \
+    r', with the parameters $\mu=%.2f$, $\alpha=%.2f$' % (mu, a) + ', \n' +\
+    r'and the eigenvalues ' + eigstr1 + ' ; ' + eigstr2
+    figs[fignum].suptitle(title)
     filename = 'hw6_1_f%i.pdf' % fignum
     print 'saving', filename
+    tickspots = list(np.arange(0, tmax, period))
+    plt.xticks(tickspots, ['%.2f' % x for x in tickspots], rotation=17)
     figs[fignum].savefig(filename)
 #    plt.tight_layout()
 
