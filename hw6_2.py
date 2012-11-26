@@ -1,3 +1,4 @@
+# https://github.com/tsbertalan/504hw6
 # -*- coding: utf-8 *-*
 import numpy as np
 import matplotlib.pyplot as plt
