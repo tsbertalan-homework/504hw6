@@ -183,7 +183,7 @@ for (fignum, parameters, regime) in zip([2, 3], [lc, sf], ['Stable Limit Cycle',
     ax2es[fignum].plot(tl, xl, 'k-')
     ax2es[fignum].plot(tl, yl, 'k--')
     ax2es[fignum].legend([r'$x$', r'$y$'])
-    ax2es[fignum].set_title(r'Concentrations over time starting from $x_0=%.1f$, $y_0=%.1f$' % initial)
+    ax2es[fignum].set_title(r'Conversion over time starting from $x_0=%.1f$, $y_0=%.1f$' % initial)
     ax2es[fignum].set_xlabel(r'$\tau$ (tick marks are separated by periods $T=2\pi/\omega=%.1f$, as predicted by the linearization)' % period)
     ax2es[fignum].set_ylabel(r'$x$ or $y$')
 
