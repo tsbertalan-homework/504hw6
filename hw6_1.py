@@ -106,7 +106,9 @@ ax4.set_ylabel(r'$\alpha$')
 
 fig1.suptitle('Problem 1: Regimes')
 plt.tight_layout()
-fig1.savefig('hw6_1_f1.pdf')
+filename = 'hw6_1_f1.pdf'
+print 'saving', filename
+fig1.savefig(filename)
 #plt.show()
 #exit()
 ax1es = range(4)
@@ -172,7 +174,9 @@ for (fignum, parameters, regime) in zip([2, 3], [lc, sf], ['Stable Limit Cycle',
     ax2es[fignum].set_xlabel(r'$\tau$')
     ax2es[fignum].set_ylabel(r'$x$ or $y$')
     figs[fignum].suptitle('Problem 1: ' + regime + r', with the parameters $\mu=%.2f$, $\alpha=%.2f$' % (mu, a))
-    figs[fignum].savefig('hw6_1_f%i.pdf' % fignum)
+    filename = 'hw6_1_f%i.pdf' % fignum
+    print 'saving', filename
+    figs[fignum].savefig(filename)
 #    plt.tight_layout()
 
-plt.show()
+#plt.show()
